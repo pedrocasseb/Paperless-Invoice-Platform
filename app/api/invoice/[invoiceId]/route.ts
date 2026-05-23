@@ -28,7 +28,6 @@ export async function GET(
             clientName: true,
             clientEmail: true,
             date: true,
-            dueDate: true,
             invoiceItemDescription: true,
             invoiceItemQuantity: true,
             invoiceItemRate: true,
@@ -65,7 +64,11 @@ export async function GET(
     pdf.text("Bill to", 20, 70);
     pdf.setFontSize(10);
     pdf.setFont("helvetica", "normal");
-    pdf.text([data.clientName, data.clientEmail, data.clientAddress], 20, 75);
+
+    const billToDetails = [data.clientName];
+    if (data.clientEmail) billToDetails.push(data.clientEmail);
+    if (data.clientAddress) billToDetails.push(data.clientAddress);
+    pdf.text(billToDetails, 20, 75);
 
     pdf.text(`Invoice Number: ${data.invoiceNumber}`, 120, 40);
     pdf.text(
@@ -75,7 +78,6 @@ export async function GET(
         120,
         45,
     );
-    pdf.text(`Due Date: Net ${data.dueDate}`, 120, 50);
 
     pdf.setFont("helvetica", "bold");
     pdf.text("Description", 20, 100);

@@ -71,9 +71,6 @@ export async function POST(
 
     <ul style="padding-left: 20px;">
       <li><strong>Invoice Number:</strong> #${invoiceData.invoiceNumber}</li>
-      <li><strong>Due Date:</strong> ${new Intl.DateTimeFormat("en-US", {
-          dateStyle: "long",
-      }).format(new Date(invoiceData.dueDate))}</li>
       <li><strong>Total Amount:</strong> ${invoiceData.total}</li>
     </ul>
 

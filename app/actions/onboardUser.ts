@@ -14,7 +14,7 @@ export async function onboardUser(previousState: any, formData: FormData) {
     });
 
     if (submission.status !== "success") {
-        return submission.reply;
+        return submission.reply();
     }
 
     const data = await prisma.user.update({

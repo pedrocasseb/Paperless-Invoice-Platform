@@ -13,24 +13,38 @@ export const invoiceSchema = z.object({
     status: z.enum(["PAID", "PENDING"]).default("PENDING"),
 
     date: z.string().min(1, "Date is required"),
-    dueDate: z.number().min(1, "Due date is required"),
 
     fromName: z.string().min(2, "Sender name is required"),
     fromEmail: z.string().email("Invalid email"),
     fromAddress: z.string().min(5, "Sender address is required"),
 
     clientName: z.string().min(2, "Client name is required"),
-    clientEmail: z.string().email("Invalid email"),
-    clientAddress: z.string().min(5, "Client address is required"),
+    clientEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+    clientAddress: z.string().optional(),
 
     currency: z.string().min(1, "Currency is required"),
     invoiceNumber: z.number().min(1, "Invoice number is required"),
 
     note: z.string().optional(),
+    category: z.string().min(1, "Category is required"),
+    installments: z.number().min(1, "Installments must be at least 1").default(1),
+    paymentMethod: z.enum(["CREDIT", "DEBIT", "CASH"]).default("CREDIT"),
+    paidInstallments: z.number().min(0).default(0),
 
     invoiceItemDescription: z
         .string()
         .min(2, "Invoice item description is required"),
     invoiceItemQuantity: z.number().min(1, "Invoice item quantity is required"),
     invoiceItemRate: z.number().min(1, "Invoice item rate is required"),
-});
+}).refine(
+    (data) => {
+        if (data.installments > 1 && data.paymentMethod !== "CREDIT") {
+            return false;
+        }
+        return true;
+    },
+    {
+        message: "Coisas parceladas devem ser obrigatoriamente no crédito",
+        path: ["paymentMethod"],
+    }
+);

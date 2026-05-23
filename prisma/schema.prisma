@@ -90,16 +90,19 @@ model Invoice {
   total Int
   status InvoiceStatus
   date DateTime
-  dueDate Int
   fromName String
   fromEmail String
   fromAddress String
   clientName String
-  clientEmail String
-  clientAddress String
+  clientEmail String?
+  clientAddress String?
   currency String
   invoiceNumber Int
   note String?
+  category String @default("Outros")
+  installments Int @default(1)
+  paymentMethod PaymentMethod @default(CREDIT)
+  paidInstallments Int @default(0)
 
   invoiceItemDescription String
   invoiceItemQuantity Int
@@ -114,4 +117,10 @@ model Invoice {
 enum InvoiceStatus {
   PAID
   PENDING
+}
+
+enum PaymentMethod {
+  CREDIT
+  DEBIT
+  CASH
 }

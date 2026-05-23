@@ -45,9 +45,10 @@ export default function CreateInvoice({
     const [rate, setRate] = useState("");
     const [quantity, setQuantity] = useState("");
     const [currency, setCurrency] = useState<Currency>("BRL");
+    const [paymentMethod, setPaymentMethod] = useState("CREDIT");
+    const [installments, setInstallments] = useState("1");
 
     const calculateTotal = (Number(quantity) || 0) * (Number(rate) || 0);
-    // console.log(calculateTotal);
 
     const [form, fields] = useForm({
         lastResult,
@@ -95,7 +96,7 @@ export default function CreateInvoice({
                             {fields.invoiceName.errors}
                         </p>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-6 mb-6">
+                    <div className="grid md:grid-cols-5 gap-4 mb-6">
                         <div className="grid gap-1.5">
                             <Label>Invoice No.</Label>
                             <div className="flex">
@@ -144,6 +145,79 @@ export default function CreateInvoice({
                             <p className="text-xs text-red-500">
                                 {fields.currency.errors}
                             </p>
+                        </div>
+                        <div className="grid gap-1.5">
+                            <Label>Category</Label>
+                            <Select
+                                defaultValue="Outros"
+                                name={fields.category.name}
+                                key={fields.category.key}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Academia">🏋️‍♂️ Academia</SelectItem>
+                                    <SelectItem value="Mercado">🛒 Mercado</SelectItem>
+                                    <SelectItem value="Aluguel">🏠 Aluguel</SelectItem>
+                                    <SelectItem value="Restaurante">🍔 Restaurante</SelectItem>
+                                    <SelectItem value="Lazer">✈️ Lazer</SelectItem>
+                                    <SelectItem value="Transporte">🚗 Transporte</SelectItem>
+                                    <SelectItem value="Serviços">💡 Serviços</SelectItem>
+                                    <SelectItem value="Outros">📦 Outros</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-red-500">
+                                {fields.category.errors}
+                            </p>
+                        </div>
+                        <div className="grid gap-1.5">
+                            <Label>Método de Pagamento</Label>
+                            <Select
+                                defaultValue="CREDIT"
+                                name={fields.paymentMethod.name}
+                                key={fields.paymentMethod.key}
+                                onValueChange={(value) => {
+                                    setPaymentMethod(value);
+                                    if (value !== "CREDIT") {
+                                        setInstallments("1");
+                                    }
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select method" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="CREDIT">💳 Crédito</SelectItem>
+                                    <SelectItem value="DEBIT">💸 Débito</SelectItem>
+                                    <SelectItem value="CASH">💵 Dinheiro</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-red-500">
+                                {fields.paymentMethod.errors}
+                            </p>
+                        </div>
+                        <div className="grid gap-1.5">
+                            <Label>Parcelas (Installments)</Label>
+                            <Input
+                                type="number"
+                                min="1"
+                                placeholder="1"
+                                name={fields.installments.name}
+                                key={fields.installments.key}
+                                value={paymentMethod !== "CREDIT" ? "1" : installments}
+                                onChange={(e) => setInstallments(e.target.value)}
+                                disabled={paymentMethod !== "CREDIT"}
+                            />
+                            {paymentMethod !== "CREDIT" ? (
+                                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                                    Pago automaticamente.
+                                </p>
+                            ) : (
+                                <p className="text-xs text-red-500">
+                                    {fields.installments.errors}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -240,32 +314,6 @@ export default function CreateInvoice({
                             </Popover>
                             <p className="text-xs text-red-500">
                                 {fields.date.errors}
-                            </p>
-                        </div>
-                        <div>
-                            <Label className="mb-1.5">Invoice Due</Label>
-                            <Select
-                                name={fields.dueDate.name}
-                                key={fields.dueDate.key}
-                                defaultValue={fields.dueDate.initialValue}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select due date" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="0">
-                                        Due on Reciept
-                                    </SelectItem>
-                                    <SelectItem value="15">
-                                        Net 15 Days
-                                    </SelectItem>
-                                    <SelectItem value="30">
-                                        Due in 30 Days
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p className="text-xs text-red-500">
-                                {fields.dueDate.errors}
                             </p>
                         </div>
                     </div>

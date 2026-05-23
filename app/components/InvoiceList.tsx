@@ -27,6 +27,7 @@ async function getData(userId: string) {
             invoiceNumber: true,
             currency: true,
             createdAt: true,
+            installments: true,
         },
         orderBy: {
             createdAt: "desc",
@@ -62,10 +63,19 @@ export async function InvoiceList() {
                                 <TableCell>#{invoice.invoiceNumber}</TableCell>
                                 <TableCell>{invoice.clientName}</TableCell>
                                 <TableCell>
-                                    {formatCurrency(
-                                        invoice.total,
-                                        invoice.currency as Currency,
-                                    )}
+                                    <div className="flex flex-col">
+                                        <span>
+                                            {formatCurrency(
+                                                invoice.total,
+                                                invoice.currency as Currency,
+                                            )}
+                                        </span>
+                                        {invoice.installments > 1 && (
+                                            <span className="text-[10px] text-muted-foreground font-medium mt-0.5">
+                                                Parcelado {invoice.installments}x ({formatCurrency(Math.round(invoice.total / invoice.installments), invoice.currency as Currency)}/mês)
+                                            </span>
+                                        )}
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     <Badge>{invoice.status}</Badge>

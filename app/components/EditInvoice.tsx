@@ -42,6 +42,8 @@ export function EditInvoice({ data }: iAppProps) {
     const [currency, setCurrency] = useState<Currency>(
         data.currency as Currency,
     );
+    const [paymentMethod, setPaymentMethod] = useState(data.paymentMethod || "CREDIT");
+    const [installments, setInstallments] = useState(data.installments?.toString() || "1");
     const [form, fields] = useForm({
         lastResult,
         onValidate({ formData }) {
@@ -90,7 +92,7 @@ export function EditInvoice({ data }: iAppProps) {
                             {fields.invoiceName.errors}
                         </p>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-6 mb-6">
+                    <div className="grid md:grid-cols-5 gap-4 mb-6">
                         <div className="grid gap-1.5">
                             <Label>Invoice No.</Label>
                             <div className="flex">
@@ -137,6 +139,79 @@ export function EditInvoice({ data }: iAppProps) {
                             <p className="text-xs text-red-500">
                                 {fields.currency.errors}
                             </p>
+                        </div>
+                        <div className="grid gap-1.5">
+                            <Label>Category</Label>
+                            <Select
+                                defaultValue={data.category || "Outros"}
+                                name={fields.category.name}
+                                key={fields.category.key}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Academia">🏋️‍♂️ Academia</SelectItem>
+                                    <SelectItem value="Mercado">🛒 Mercado</SelectItem>
+                                    <SelectItem value="Aluguel">🏠 Aluguel</SelectItem>
+                                    <SelectItem value="Restaurante">🍔 Restaurante</SelectItem>
+                                    <SelectItem value="Lazer">✈️ Lazer</SelectItem>
+                                    <SelectItem value="Transporte">🚗 Transporte</SelectItem>
+                                    <SelectItem value="Serviços">💡 Serviços</SelectItem>
+                                    <SelectItem value="Outros">📦 Outros</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-red-500">
+                                {fields.category.errors}
+                            </p>
+                        </div>
+                        <div className="grid gap-1.5">
+                            <Label>Método de Pagamento</Label>
+                            <Select
+                                defaultValue={data.paymentMethod || "CREDIT"}
+                                name={fields.paymentMethod.name}
+                                key={fields.paymentMethod.key}
+                                onValueChange={(value) => {
+                                    setPaymentMethod(value as any);
+                                    if (value !== "CREDIT") {
+                                        setInstallments("1");
+                                    }
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select method" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="CREDIT">💳 Crédito</SelectItem>
+                                    <SelectItem value="DEBIT">💸 Débito</SelectItem>
+                                    <SelectItem value="CASH">💵 Dinheiro</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-red-500">
+                                {fields.paymentMethod.errors}
+                            </p>
+                        </div>
+                        <div className="grid gap-1.5">
+                            <Label>Parcelas (Installments)</Label>
+                            <Input
+                                type="number"
+                                min="1"
+                                placeholder="1"
+                                name={fields.installments.name}
+                                key={fields.installments.key}
+                                value={paymentMethod !== "CREDIT" ? "1" : installments}
+                                onChange={(e) => setInstallments(e.target.value)}
+                                disabled={paymentMethod !== "CREDIT"}
+                            />
+                            {paymentMethod !== "CREDIT" ? (
+                                <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                                    Pago automaticamente.
+                                </p>
+                            ) : (
+                                <p className="text-xs text-red-500">
+                                    {fields.installments.errors}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -188,7 +263,7 @@ export function EditInvoice({ data }: iAppProps) {
                                     placeholder="Client Email"
                                     name={fields.clientEmail.name}
                                     key={fields.clientEmail.key}
-                                    defaultValue={data.clientEmail}
+                                    defaultValue={data.clientEmail ?? undefined}
                                 />
                                 <p className="text-xs text-red-500">
                                     {fields.clientEmail.errors}
@@ -197,7 +272,7 @@ export function EditInvoice({ data }: iAppProps) {
                                     placeholder="Client Address"
                                     name={fields.clientAddress.name}
                                     key={fields.clientAddress.key}
-                                    defaultValue={data.clientAddress}
+                                    defaultValue={data.clientAddress ?? undefined}
                                 />
                                 <p className="text-xs text-red-500">
                                     {fields.clientAddress.errors}
@@ -236,32 +311,6 @@ export function EditInvoice({ data }: iAppProps) {
                             </Popover>
                             <p className="text-xs text-red-500">
                                 {fields.date.errors}
-                            </p>
-                        </div>
-                        <div>
-                            <Label className="mb-1.5">Invoice Due</Label>
-                            <Select
-                                name={fields.dueDate.name}
-                                key={fields.dueDate.key}
-                                defaultValue={data.dueDate.toString()}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select due date" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="0">
-                                        Due on Reciept
-                                    </SelectItem>
-                                    <SelectItem value="15">
-                                        Net 15 Days
-                                    </SelectItem>
-                                    <SelectItem value="30">
-                                        Due in 30 Days
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p className="text-xs text-red-500">
-                                {fields.dueDate.errors}
                             </p>
                         </div>
                     </div>

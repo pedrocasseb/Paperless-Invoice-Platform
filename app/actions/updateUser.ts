@@ -3,7 +3,7 @@
 import { prisma } from "@/app/utils/db";
 import { requireUser } from "@/app/utils/hooks";
 import { parseWithZod } from "@conform-to/zod";
-import { onboardingSchema } from "../utils/zodSchemas"; // Pode reutilizar o schema
+import { onboardingSchema } from "../utils/zodSchemas";
 import { redirect } from "next/navigation";
 
 export async function updateUser(prevState: any, formData: FormData) {

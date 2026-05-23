@@ -19,14 +19,18 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
         return submission.reply();
     }
 
+    const isAutoPaid = submission.value.paymentMethod === "DEBIT" || submission.value.paymentMethod === "CASH";
+    const finalStatus = isAutoPaid ? "PAID" : submission.value.status;
+    const finalInstallments = isAutoPaid ? 1 : submission.value.installments;
+    const finalPaidInstallments = isAutoPaid ? 1 : (finalStatus === "PAID" ? finalInstallments : 0);
+
     const data = await prisma.invoice.create({
         data: {
-            clientAddress: submission.value.clientAddress,
-            clientEmail: submission.value.clientEmail,
+            clientAddress: submission.value.clientAddress || null,
+            clientEmail: submission.value.clientEmail || null,
             clientName: submission.value.clientName,
             currency: submission.value.currency,
             date: submission.value.date,
-            dueDate: submission.value.dueDate,
             fromAddress: submission.value.fromAddress,
             fromEmail: submission.value.fromEmail,
             fromName: submission.value.fromName,
@@ -35,9 +39,13 @@ export async function createInvoice(prevState: unknown, formData: FormData) {
             invoiceItemRate: submission.value.invoiceItemRate,
             invoiceNumber: submission.value.invoiceNumber,
             invoiceName: submission.value.invoiceName,
-            status: submission.value.status,
+            status: finalStatus,
             total: submission.value.total,
             note: submission.value.note,
+            category: submission.value.category,
+            installments: finalInstallments,
+            paymentMethod: submission.value.paymentMethod,
+            paidInstallments: finalPaidInstallments,
             userId: session.user?.id,
         },
     });
