@@ -53,6 +53,11 @@ function getInvoicePaymentForMonth(
     };
 }
 
+function isSameMonthYear(date: Date | string, targetYear: number, targetMonth: number) {
+    const d = new Date(date);
+    return d.getFullYear() === targetYear && d.getMonth() === targetMonth;
+}
+
 async function getAnalyticsData(userId: string) {
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -62,23 +67,39 @@ async function getAnalyticsData(userId: string) {
     const prevYear = prevMonthDate.getFullYear();
     const prevMonth = prevMonthDate.getMonth();
 
-    const invoices = await prisma.invoice.findMany({
-        where: {
-            userId: userId,
-        },
-        select: {
-            id: true,
-            invoiceName: true,
-            total: true,
-            category: true,
-            date: true,
-            currency: true,
-            installments: true,
-            status: true,
-            paymentMethod: true,
-            paidInstallments: true,
-        },
-    });
+    const [invoices, incomes] = await Promise.all([
+        prisma.invoice.findMany({
+            where: {
+                userId: userId,
+            },
+            select: {
+                id: true,
+                invoiceName: true,
+                total: true,
+                category: true,
+                date: true,
+                currency: true,
+                installments: true,
+                status: true,
+                paymentMethod: true,
+                paidInstallments: true,
+            },
+        }),
+        prisma.income.findMany({
+            where: {
+                userId: userId,
+            },
+            select: {
+                id: true,
+                name: true,
+                amount: true,
+                category: true,
+                date: true,
+                currency: true,
+                status: true,
+            },
+        }),
+    ]);
 
     const categories = [
         "Gym",
@@ -199,9 +220,78 @@ async function getAnalyticsData(userId: string) {
         "Current Month": currentTotals[cat],
     }));
 
+    // --- INCOMES ANALYTICS ---
+    const incomeCategories = [
+        "Salário",
+        "Freelance",
+        "Investimentos",
+        "Reembolso",
+        "Outros",
+    ];
+
+    const incomeCategoryColors: { [key: string]: string } = {
+        "Salário": "#10b981",
+        "Freelance": "#3b82f6",
+        "Investimentos": "#f59e0b",
+        "Reembolso": "#ec4899",
+        "Outros": "#6b7280",
+    };
+
+    let currentMonthIncomeReceived = 0;
+    let currentMonthIncomePending = 0;
+    let previousMonthIncomeReceived = 0;
+
+    const currentIncomeTotals = Object.fromEntries(incomeCategories.map((c) => [c, 0]));
+    const previousIncomeTotals = Object.fromEntries(incomeCategories.map((c) => [c, 0]));
+
+    incomes.forEach((inc) => {
+        const cat = inc.category || "Outros";
+        const mappedCat = incomeCategories.includes(cat) ? cat : "Outros";
+
+        if (isSameMonthYear(inc.date, currentYear, currentMonth)) {
+            if (inc.status === "RECEIVED") {
+                currentMonthIncomeReceived += inc.amount;
+                currentIncomeTotals[mappedCat] += inc.amount;
+            } else {
+                currentMonthIncomePending += inc.amount;
+            }
+        } else if (isSameMonthYear(inc.date, prevYear, prevMonth)) {
+            if (inc.status === "RECEIVED") {
+                previousMonthIncomeReceived += inc.amount;
+                previousIncomeTotals[mappedCat] += inc.amount;
+            }
+        }
+    });
+
+    const differenceIncomeTotal = currentMonthIncomeReceived - previousMonthIncomeReceived;
+
+    const incomeCategoryComparison = incomeCategories.map((cat) => {
+        const current = currentIncomeTotals[cat];
+        const previous = previousIncomeTotals[cat];
+        return {
+            category: cat,
+            current,
+            previous,
+            diff: current - previous,
+        };
+    });
+
+    const incomePieChartData = incomeCategories.map((cat) => ({
+        name: cat,
+        value: currentIncomeTotals[cat],
+        color: incomeCategoryColors[cat],
+    }));
+
+    const incomeBarChartData = incomeCategories.map((cat) => ({
+        category: cat,
+        "Previous Month": previousIncomeTotals[cat],
+        "Current Month": currentIncomeTotals[cat],
+    }));
+
     const currency = invoices[0]?.currency || "BRL";
 
     return {
+        // Expenses
         currentMonthPaid,
         currentMonthPending,
         previousMonthPaid,
@@ -216,6 +306,15 @@ async function getAnalyticsData(userId: string) {
             debit: currentMonthDebitPaid,
             cash: currentMonthCashPaid,
         },
+
+        // Incomes
+        currentMonthIncomeReceived,
+        currentMonthIncomePending,
+        previousMonthIncomeReceived,
+        differenceIncomeTotal,
+        incomeCategoryComparison,
+        incomePieChartData,
+        incomeBarChartData,
     };
 }
 

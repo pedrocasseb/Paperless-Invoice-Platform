@@ -47,7 +47,7 @@ export default function CreateIncome() {
     const [selected, setSelected] = useState(new Date());
 
     return (
-        <Card className="w-full max-w-4xl mx-auto animate-in fade-in-50">
+        <Card className="w-full max-w-4xl mx-auto">
             <CardContent className="p-6">
                 <form
                     action={action}

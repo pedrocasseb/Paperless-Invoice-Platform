@@ -39,9 +39,12 @@ import {
     Wallet,
     Coins,
     Loader2,
+    Briefcase,
+    Laptop,
+    Undo2,
 } from "lucide-react";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { payNextInstallment } from "../../actions/payInstallment";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -92,6 +95,15 @@ interface AnalyticsClientProps {
         debit: number;
         cash: number;
     };
+
+    // Incomes
+    currentMonthIncomeReceived: number;
+    currentMonthIncomePending: number;
+    previousMonthIncomeReceived: number;
+    differenceIncomeTotal: number;
+    incomeCategoryComparison: CategoryComp[];
+    incomePieChartData: PieData[];
+    incomeBarChartData: BarData[];
 }
 
 const CATEGORY_ICONS: { [key: string]: any } = {
@@ -105,6 +117,14 @@ const CATEGORY_ICONS: { [key: string]: any } = {
     Outros: Folder,
 };
 
+const INCOME_CATEGORY_ICONS: { [key: string]: any } = {
+    "Salário": Briefcase,
+    "Freelance": Laptop,
+    "Investimentos": TrendingUp,
+    "Reembolso": Undo2,
+    "Outros": Folder,
+};
+
 export default function AnalyticsClient({
     currentMonthPaid,
     currentMonthPending,
@@ -116,8 +136,18 @@ export default function AnalyticsClient({
     activeInstallmentsThisMonth,
     currency,
     paymentMethodsData,
+
+    // Incomes
+    currentMonthIncomeReceived,
+    currentMonthIncomePending,
+    previousMonthIncomeReceived,
+    differenceIncomeTotal,
+    incomeCategoryComparison,
+    incomePieChartData,
+    incomeBarChartData,
 }: AnalyticsClientProps) {
     const [isPending, startTransition] = useTransition();
+    const [activeSection, setActiveSection] = useState<"expenses" | "incomes">("expenses");
 
     const handlePayInstallment = (id: string, name: string) => {
         startTransition(async () => {
@@ -133,11 +163,44 @@ export default function AnalyticsClient({
     const isSaving = differenceTotal <= 0;
     const absDiff = Math.abs(differenceTotal);
 
+    const isIncomeGrowth = differenceIncomeTotal >= 0;
+    const absIncomeDiff = Math.abs(differenceIncomeTotal);
+
     const activePieData = pieChartData.filter((d) => d.value > 0);
+    const activeIncomePieData = incomePieChartData.filter((d) => d.value > 0);
 
     return (
         <div className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="flex justify-start border-b pb-4 mb-2">
+                <div className="flex gap-2 bg-muted p-1 rounded-lg">
+                    <button
+                        onClick={() => setActiveSection("expenses")}
+                        className={`px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2 ${
+                            activeSection === "expenses"
+                                ? "bg-background shadow text-foreground"
+                                : "text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        <TrendingDown className="size-4 text-red-500" />
+                        Expenses Analytics (Despesas)
+                    </button>
+                    <button
+                        onClick={() => setActiveSection("incomes")}
+                        className={`px-4 py-2 text-sm font-semibold rounded-md transition-all flex items-center gap-2 ${
+                            activeSection === "incomes"
+                                ? "bg-background shadow text-foreground"
+                                : "text-muted-foreground hover:text-foreground"
+                        }`}
+                    >
+                        <TrendingUp className="size-4 text-emerald-500" />
+                        Incomes Analytics (Receitas)
+                    </button>
+                </div>
+            </div>
+
+            {activeSection === "expenses" ? (
+                <div className="space-y-6 animate-in fade-in-50 duration-200">
+                    <div className="grid gap-4 md:grid-cols-3">
                 <Card className="relative overflow-hidden">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center justify-between">
@@ -742,6 +805,376 @@ export default function AnalyticsClient({
                     </CardContent>
                 </Card>
             </div>
+        </div>
+        ) : (
+            <div className="space-y-6 animate-in fade-in-50 duration-200">
+                    <div className="grid gap-4 md:grid-cols-3">
+                        <Card className="relative overflow-hidden">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium flex items-center justify-between">
+                                    <span>Realized Income (Received)</span>
+                                    <Badge>Received</Badge>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <h2 className="text-3xl font-bold tracking-tight">
+                                    {formatCurrency(currentMonthIncomeReceived, currency as any)}
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Total received earnings in the current month
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="relative overflow-hidden border">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium flex items-center justify-between">
+                                    <span>Expected Income (Pending)</span>
+                                    <Badge>Pending</Badge>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <h2 className="text-3xl font-bold tracking-tight">
+                                    {formatCurrency(currentMonthIncomePending, currency as any)}
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Pending earnings expected for this month
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        <Card
+                            className={`relative overflow-hidden border backdrop-blur-md transition-all duration-300 ${
+                                isIncomeGrowth
+                                    ? "bg-emerald-500/5 border-emerald-500/10"
+                                    : "bg-destructive/5 border-destructive/10"
+                            }`}
+                        >
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium flex items-center justify-between">
+                                    <span>General Comparison (Received)</span>
+                                    <Badge
+                                        className={`px-2 py-0.5 ${
+                                            isIncomeGrowth
+                                                ? "border border-emerald-600 bg-transparent text-emerald-600"
+                                                : "border-destructive bg-transparent text-destructive"
+                                        }`}
+                                    >
+                                        {isIncomeGrowth ? "Growth" : "Reduction"}
+                                    </Badge>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex items-baseline gap-2">
+                                    <h2
+                                        className={`text-3xl font-bold tracking-tight ${
+                                            isIncomeGrowth
+                                                ? "text-emerald-600 dark:text-emerald-400"
+                                                : "text-destructive"
+                                        }`}
+                                    >
+                                        {formatCurrency(absIncomeDiff, currency as any)}
+                                    </h2>
+                                    <span
+                                        className={`text-sm font-semibold ${
+                                            isIncomeGrowth
+                                                ? "text-emerald-600"
+                                                : "text-destructive"
+                                        }`}
+                                    >
+                                        {isIncomeGrowth ? "more" : "less"}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                    {isIncomeGrowth ? (
+                                        <>
+                                            <TrendingUp className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                                            Your received earnings exceeded last month's!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <TrendingDown className="size-3.5 text-destructive" />
+                                            Received earnings are lower than last month's.
+                                        </>
+                                    )}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <Card className="border bg-background/50 backdrop-blur-md">
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="size-5 text-muted-foreground" />
+                                <CardTitle className="text-lg font-bold">
+                                    Smart Income Insights
+                                </CardTitle>
+                            </div>
+                            <CardDescription>
+                                Analysis based on your <span className="font-bold">received</span> incomes
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                <div className="p-3.5 rounded-lg border bg-background/80 flex items-start gap-3 shadow-sm">
+                                    {isIncomeGrowth ? (
+                                        <div className="p-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 shrink-0">
+                                            <TrendingUp className="size-5" />
+                                        </div>
+                                    ) : (
+                                        <div className="p-1.5 rounded-full bg-destructive/10 text-destructive shrink-0">
+                                            <TrendingDown className="size-5" />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <h4 className="text-sm font-semibold">
+                                            General Summary of Received Earnings
+                                        </h4>
+                                        <p className="text-sm text-muted-foreground mt-0.5">
+                                            {isIncomeGrowth ? (
+                                                <>
+                                                    Great progress! You received{" "}
+                                                    <strong className="text-emerald-600 dark:text-emerald-400">
+                                                        {formatCurrency(absIncomeDiff, currency as any)}{" "}
+                                                        more
+                                                    </strong>{" "}
+                                                    in incomes compared to last month.
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Your received earnings were{" "}
+                                                    <strong className="text-destructive">
+                                                        {formatCurrency(absIncomeDiff, currency as any)}{" "}
+                                                        lower
+                                                    </strong>{" "}
+                                                    than last month. Try finding new freelancing opportunities to boost it!
+                                                </>
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    {incomeCategoryComparison.map((item) => {
+                                        const Icon = INCOME_CATEGORY_ICONS[item.category] || Folder;
+                                        const diffAbs = Math.abs(item.diff);
+                                        const currentFormatted = formatCurrency(item.current, currency as any);
+                                        const diffFormatted = formatCurrency(diffAbs, currency as any);
+
+                                        if (item.current === 0 && item.previous === 0) return null;
+
+                                        return (
+                                            <div
+                                                key={item.category}
+                                                className="p-3 rounded-lg border bg-background/50 flex items-center justify-between gap-4"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 rounded-lg bg-muted flex items-center justify-center">
+                                                        <Icon className="size-4 text-muted-foreground" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium">
+                                                            {item.category}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                                            Received:{" "}
+                                                            <span className="font-medium text-foreground">
+                                                                {currentFormatted}
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="text-right">
+                                                    {item.diff < 0 ? (
+                                                        <div className="flex flex-col items-end">
+                                                            <Badge
+                                                                variant="destructive"
+                                                                className="bg-destructive/10 text-destructive hover:bg-destructive/20 px-2 py-0.5 border border-destructive/20 flex items-center gap-0.5"
+                                                            >
+                                                                <TrendingDown className="size-3" />
+                                                                -{diffFormatted}
+                                                            </Badge>
+                                                            <span className="text-[10px] text-muted-foreground mt-0.5">
+                                                                decreased
+                                                            </span>
+                                                        </div>
+                                                    ) : item.diff > 0 ? (
+                                                        <div className="flex flex-col items-end">
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 px-2 py-0.5 border border-emerald-500/20 flex items-center gap-0.5"
+                                                            >
+                                                                <TrendingUp className="size-3" />
+                                                                +{diffFormatted}
+                                                            </Badge>
+                                                            <span className="text-[10px] text-muted-foreground mt-0.5">
+                                                                earned more
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-col items-end">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="text-muted-foreground px-2 py-0.5 flex items-center gap-0.5"
+                                                            >
+                                                                <Minus className="size-3" />
+                                                                Stable
+                                                            </Badge>
+                                                            <span className="text-[10px] text-muted-foreground mt-0.5">
+                                                                no change
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid gap-6 md:grid-cols-3">
+                        <Card className="md:col-span-2 border bg-background/50 backdrop-blur-md">
+                            <CardHeader>
+                                <CardTitle className="text-base font-semibold">
+                                    Monthly Category Comparison (Received)
+                                </CardTitle>
+                                <CardDescription>
+                                    Side-by-side comparison of received incomes between last month and current month
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="h-80 pr-4 mt-3">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        data={incomeBarChartData}
+                                        margin={{
+                                            top: 10,
+                                            right: 10,
+                                            left: 15,
+                                            bottom: 5,
+                                        }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+                                        <XAxis
+                                            dataKey="category"
+                                            tickLine={false}
+                                            axisLine={false}
+                                            className="text-xs"
+                                        />
+                                        <YAxis
+                                            tickLine={false}
+                                            axisLine={false}
+                                            className="text-xs"
+                                            tickFormatter={(v) => `R$ ${v}`}
+                                        />
+                                        <RechartsTooltip
+                                            cursor={{ fill: "rgba(148, 163, 184, 0.08)" }}
+                                            formatter={(value: any) => [
+                                                formatCurrency(value, currency as any),
+                                                "",
+                                            ]}
+                                            contentStyle={{
+                                                background: "hsl(var(--background))",
+                                                borderColor: "hsl(var(--border))",
+                                                borderRadius: "8px",
+                                            }}
+                                        />
+                                        <Legend
+                                            wrapperStyle={{
+                                                fontSize: "12px",
+                                                paddingTop: "10px",
+                                            }}
+                                        />
+                                        <Bar
+                                            dataKey="Previous Month"
+                                            fill="#94a3b8"
+                                            radius={[4, 4, 0, 0]}
+                                        />
+                                        <Bar
+                                            dataKey="Current Month"
+                                            fill="#10b981"
+                                            radius={[4, 4, 0, 0]}
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border bg-background/50 backdrop-blur-md">
+                            <CardHeader>
+                                <CardTitle className="text-base font-semibold">
+                                    Income Distribution (Received)
+                                </CardTitle>
+                                <CardDescription>
+                                    Percentage division of received earnings by category in the current month
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="h-80 flex flex-col justify-between">
+                                {activeIncomePieData.length > 0 ? (
+                                    <>
+                                        <div className="h-56 relative">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <PieChart>
+                                                    <Pie
+                                                        data={activeIncomePieData}
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        innerRadius={60}
+                                                        outerRadius={80}
+                                                        paddingAngle={4}
+                                                        dataKey="value"
+                                                    >
+                                                        {activeIncomePieData.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                                        ))}
+                                                    </Pie>
+                                                    <RechartsTooltip
+                                                        formatter={(value: any) => [
+                                                            formatCurrency(value, currency as any),
+                                                            "",
+                                                        ]}
+                                                        contentStyle={{
+                                                            background: "hsl(var(--background))",
+                                                            borderColor: "hsl(var(--border))",
+                                                            borderRadius: "8px",
+                                                        }}
+                                                    />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 mt-2 text-xs overflow-y-auto max-h-20 scrollbar-none">
+                                            {activeIncomePieData.map((entry, index) => (
+                                                <div key={index} className="flex items-center gap-1.5 min-w-0">
+                                                    <div
+                                                        className="size-2 rounded-full shrink-0"
+                                                        style={{ backgroundColor: entry.color }}
+                                                    />
+                                                    <span className="truncate font-medium text-muted-foreground">
+                                                        {entry.name}
+                                                    </span>
+                                                    <span className="font-semibold text-foreground ml-auto">
+                                                        {((entry.value / currentMonthIncomeReceived) * 100).toFixed(0)}%
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
+                                        <Sparkles className="size-8 mb-2 opacity-20" />
+                                        <p className="text-sm">
+                                            No received incomes recorded in the current month.
+                                        </p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -29,9 +29,5 @@ export default async function EditIncomeRoute({
     const session = await requireUser();
     const data = await getData(incomeId, session.user?.id as string);
 
-    return (
-        <div>
-            <EditIncome data={data} />
-        </div>
-    );
+    return <EditIncome data={data} />;
 }
