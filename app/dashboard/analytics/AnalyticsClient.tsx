@@ -189,7 +189,7 @@ export default function AnalyticsClient({
                                 className={`px-2 py-0.5 ${
                                     isSaving
                                         ? "border border-indigo-600 bg-transparent text-indigo-600"
-                                        : "border-destructive"
+                                        : "border-destructive bg-transparent text-destructive"
                                 }`}
                             >
                                 {isSaving ? "Savings" : "Increase"}

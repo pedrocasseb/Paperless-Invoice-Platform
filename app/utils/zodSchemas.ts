@@ -48,3 +48,14 @@ export const invoiceSchema = z.object({
         path: ["paymentMethod"],
     }
 );
+
+export const incomeSchema = z.object({
+    name: z.string().min(2, "Income name is required"),
+    amount: z.number().min(1, "1$ is the minimum amount"),
+    status: z.enum(["RECEIVED", "PENDING"]).default("PENDING"),
+    date: z.string().min(1, "Date is required"),
+    currency: z.string().min(1, "Currency is required"),
+    category: z.string().min(1, "Category is required"),
+    note: z.string().optional(),
+});
+

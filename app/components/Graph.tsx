@@ -10,7 +10,8 @@ import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 interface iAppProps {
     data: {
         date: string;
-        amount: number;
+        income: number;
+        expense: number;
     }[];
 }
 
@@ -19,9 +20,13 @@ export default function Graph({ data }: iAppProps) {
     return (
         <ChartContainer
             config={{
-                amount: {
-                    label: "Amount",
-                    color: "black",
+                income: {
+                    label: "Income (+)",
+                    color: "hsl(var(--primary))",
+                },
+                expense: {
+                    label: "Expenses (-)",
+                    color: "hsl(var(--destructive))",
                 },
             }}
             className="min-h-75 h-full w-full"
@@ -35,9 +40,16 @@ export default function Graph({ data }: iAppProps) {
                     />
                     <Line
                         type="monotone"
-                        dataKey="amount"
-                        stroke="var(--color-amount)"
-                        strokeWidth={2}
+                        dataKey="income"
+                        stroke="#10b981"
+                        strokeWidth={2.5}
+                        dot={true}
+                    />
+                    <Line
+                        type="monotone"
+                        dataKey="expense"
+                        stroke="#ef4444"
+                        strokeWidth={2.5}
                         dot={true}
                     />
                 </LineChart>

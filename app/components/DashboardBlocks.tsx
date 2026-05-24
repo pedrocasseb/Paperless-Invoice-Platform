@@ -1,122 +1,137 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, CreditCard, DollarSign, Users } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, CreditCard, DollarSign, Wallet } from "lucide-react";
 import { prisma } from "../utils/db";
 import { requireUser } from "../utils/hooks";
 import { Currency, formatCurrency } from "../utils/format";
 
 async function getData(userId: string) {
-    const [data, openInvoices, paidInvoices] = await Promise.all([
+    const [invoices, incomes] = await Promise.all([
         prisma.invoice.findMany({
             where: {
                 userId: userId,
             },
             select: {
                 total: true,
-                currency: true,
+                status: true,
             },
         }),
-        prisma.invoice.findMany({
+        prisma.income.findMany({
             where: {
                 userId: userId,
-                status: "PENDING",
             },
             select: {
-                id: true,
-            },
-        }),
-        prisma.invoice.findMany({
-            where: {
-                userId: userId,
-                status: "PAID",
-            },
-            select: {
-                id: true,
+                amount: true,
+                status: true,
             },
         }),
     ]);
 
     return {
-        data,
-        openInvoices,
-        paidInvoices,
+        invoices,
+        incomes,
     };
 }
 
 export async function DashboardBlocks() {
     const session = await requireUser();
-    const { data, openInvoices, paidInvoices } = await getData(
+    const { invoices, incomes } = await getData(
         session.user?.id as string,
     );
+
+    const receivedIncome = incomes
+        .filter((i) => i.status === "RECEIVED")
+        .reduce((acc, curr) => acc + curr.amount, 0);
+
+    const paidExpenses = invoices
+        .filter((i) => i.status === "PAID")
+        .reduce((acc, curr) => acc + curr.total, 0);
+
+    const netBalance = receivedIncome - paidExpenses;
+
+    const pendingIncome = incomes
+        .filter((i) => i.status === "PENDING")
+        .reduce((acc, curr) => acc + curr.amount, 0);
+
+    const pendingExpenses = invoices
+        .filter((i) => i.status === "PENDING")
+        .reduce((acc, curr) => acc + curr.total, 0);
+
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-8">
-            <Card>
+            <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                     <CardTitle className="text-sm font-medium">
-                        Total Revenue
+                        Net Balance
                     </CardTitle>
-                    <DollarSign className="size-4 text-muted-foreground" />
+                    <Wallet className="size-4 text-primary animate-pulse" />
                 </CardHeader>
                 <CardContent>
-                    <h2 className="text-2xl font-bold">
-                        {formatCurrency(
-                            data.reduce(
-                                (acc, invoice) => acc + invoice.total,
-                                0,
-                            ),
-                            "BRL" as Currency,
-                        )}
+                    <h2 className={`text-2xl font-bold ${netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                        {formatCurrency(netBalance, "BRL" as Currency)}
                     </h2>
-                    <p className="text-xs text-muted-foreground">
-                        Based on the last 30 days!
+                    <p className="text-xs text-muted-foreground mt-1">
+                        Current liquidity balance
                     </p>
                 </CardContent>
             </Card>
+            
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                     <CardTitle className="text-sm font-medium">
-                        Total Invoices Issued
+                        Total Income
                     </CardTitle>
-                    <Users className="size-4 text-muted-foreground" />
+                    <ArrowUpRight className="size-4 text-emerald-500" />
                 </CardHeader>
                 <CardContent>
-                    <h2 className="text-2xl font-bold">{data.length}</h2>
-                    <p className="text-xs text-muted-foreground">
-                        Total invoices issued!
+                    <h2 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {formatCurrency(receivedIncome, "BRL" as Currency)}
+                    </h2>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        Received in your account
                     </p>
                 </CardContent>
             </Card>
+
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                     <CardTitle className="text-sm font-medium">
-                        Paid Invoices
+                        Total Expenses
+                    </CardTitle>
+                    <ArrowDownRight className="size-4 text-red-500" />
+                </CardHeader>
+                <CardContent>
+                    <h2 className="text-2xl font-bold text-red-500">
+                        {formatCurrency(paidExpenses, "BRL" as Currency)}
+                    </h2>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        Paid out on invoices
+                    </p>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <CardTitle className="text-sm font-medium">
+                        Pending Balances
                     </CardTitle>
                     <CreditCard className="size-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent>
-                    <h2 className="text-2xl font-bold">
-                        {paidInvoices.length}
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                        Total invoices that have been paid!
-                    </p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                    <CardTitle className="text-sm font-medium">
-                        Open Invoices
-                    </CardTitle>
-                    <Activity className="size-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <h2 className="text-2xl font-bold">
-                        {openInvoices.length}
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                        Invoices which havent been paid!
-                    </p>
+                <CardContent className="space-y-1">
+                    <div className="flex justify-between items-center text-xs">
+                        <span className="text-muted-foreground">To Receive:</span>
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                            + {formatCurrency(pendingIncome, "BRL" as Currency)}
+                        </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs pt-1 border-t">
+                        <span className="text-muted-foreground">To Pay:</span>
+                        <span className="font-semibold text-red-500">
+                            - {formatCurrency(pendingExpenses, "BRL" as Currency)}
+                        </span>
+                    </div>
                 </CardContent>
             </Card>
         </div>
     );
 }
+
