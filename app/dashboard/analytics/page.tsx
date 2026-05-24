@@ -81,25 +81,25 @@ async function getAnalyticsData(userId: string) {
     });
 
     const categories = [
-        "Academia",
-        "Mercado",
-        "Aluguel",
-        "Restaurante",
-        "Lazer",
-        "Transporte",
-        "Serviços",
-        "Outros",
+        "Gym",
+        "Groceries",
+        "Rent",
+        "Restaurant",
+        "Leisure",
+        "Transport",
+        "Utilities",
+        "Other",
     ];
 
     const categoryColors: { [key: string]: string } = {
-        Academia: "#3b82f6",
-        Mercado: "#10b981",
-        Aluguel: "#f59e0b",
-        Restaurante: "#ef4444",
-        Lazer: "#8b5cf6",
-        Transporte: "#ec4899",
-        Serviços: "#06b6d4",
-        Outros: "#6b7280",
+        Gym: "#3b82f6",
+        Groceries: "#10b981",
+        Rent: "#f59e0b",
+        Restaurant: "#ef4444",
+        Leisure: "#8b5cf6",
+        Transport: "#ec4899",
+        Utilities: "#06b6d4",
+        Other: "#6b7280",
     };
 
     let currentMonthPaid = 0;
@@ -115,8 +115,17 @@ async function getAnalyticsData(userId: string) {
     const activeInstallmentsThisMonth: ActiveInstallment[] = [];
 
     invoices.forEach((inv) => {
-        const cat = inv.category || "Outros";
-        const mappedCat = categories.includes(cat) ? cat : "Outros";
+        let cat = inv.category || "Other";
+        if (cat === "Academia") cat = "Gym";
+        if (cat === "Mercado") cat = "Groceries";
+        if (cat === "Aluguel") cat = "Rent";
+        if (cat === "Restaurante") cat = "Restaurant";
+        if (cat === "Lazer") cat = "Leisure";
+        if (cat === "Transporte") cat = "Transport";
+        if (cat === "Serviços") cat = "Utilities";
+        if (cat === "Outros") cat = "Other";
+
+        const mappedCat = categories.includes(cat) ? cat : "Other";
 
         const currentPay = getInvoicePaymentForMonth(
             inv,
@@ -186,8 +195,8 @@ async function getAnalyticsData(userId: string) {
 
     const barChartData = categories.map((cat) => ({
         category: cat,
-        "Mês Anterior": previousTotals[cat],
-        "Mês Atual": currentTotals[cat],
+        "Previous Month": previousTotals[cat],
+        "Current Month": currentTotals[cat],
     }));
 
     const currency = invoices[0]?.currency || "BRL";
@@ -222,8 +231,7 @@ export default async function AnalyticsRoute() {
                         Analytics & Insights
                     </CardTitle>
                     <CardDescription>
-                        Acompanhe a distribuição de despesas e compare os seus
-                        gastos pagos e a pagar.
+                        Track your expense distribution and compare your paid and pending expenses.
                     </CardDescription>
                 </div>
             </CardHeader>

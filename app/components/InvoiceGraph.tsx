@@ -14,41 +14,49 @@ async function getInvoices(userId: string) {
         where: {
             status: "PAID",
             userId: userId,
-            createdAt: {
+            date: {
                 lte: new Date(),
                 gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
             },
         },
         select: {
-            createdAt: true,
+            date: true,
             total: true,
         },
         orderBy: {
-            createdAt: "asc",
+            date: "asc",
         },
     });
 
-    const aggregatedData = rawData.reduce(
-        (acc: { [key: string]: number }, curr) => {
-            const date = new Date(curr.createdAt).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
+    const aggregatedMap = new Map<string, { dateStr: string; amount: number; dateObj: Date }>();
+
+    rawData.forEach((curr) => {
+        const d = new Date(curr.date);
+        const dateStr = d.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+        });
+
+        const startOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const key = startOfDay.getTime().toString();
+        const existing = aggregatedMap.get(key);
+        if (existing) {
+            existing.amount += curr.total;
+        } else {
+            aggregatedMap.set(key, {
+                dateStr,
+                amount: curr.total,
+                dateObj: startOfDay,
             });
+        }
+    });
 
-            acc[date] = (acc[date] || 0) + curr.total;
-            return acc;
-        },
-        {},
-    );
-
-    const transformedData = Object.entries(aggregatedData)
-        .map(([date, amount]) => ({
-            date,
-            amount,
-            originalDate: new Date(date + ", " + new Date().getFullYear()),
-        }))
-        .sort((a, b) => a.originalDate.getTime() - b.originalDate.getTime())
-        .map(({ date, amount }) => ({ date, amount }));
+    const transformedData = Array.from(aggregatedMap.values())
+        .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())
+        .map((item) => ({
+            date: item.dateStr,
+            amount: item.amount,
+        }));
 
     return transformedData;
 }

@@ -149,7 +149,7 @@ export default function CreateInvoice({
                         <div className="grid gap-1.5">
                             <Label>Category</Label>
                             <Select
-                                defaultValue="Outros"
+                                defaultValue="Other"
                                 name={fields.category.name}
                                 key={fields.category.key}
                             >
@@ -157,14 +157,14 @@ export default function CreateInvoice({
                                     <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Academia">🏋️‍♂️ Academia</SelectItem>
-                                    <SelectItem value="Mercado">🛒 Mercado</SelectItem>
-                                    <SelectItem value="Aluguel">🏠 Aluguel</SelectItem>
-                                    <SelectItem value="Restaurante">🍔 Restaurante</SelectItem>
-                                    <SelectItem value="Lazer">✈️ Lazer</SelectItem>
-                                    <SelectItem value="Transporte">🚗 Transporte</SelectItem>
-                                    <SelectItem value="Serviços">💡 Serviços</SelectItem>
-                                    <SelectItem value="Outros">📦 Outros</SelectItem>
+                                    <SelectItem value="Gym"> Gym</SelectItem>
+                                    <SelectItem value="Groceries"> Groceries</SelectItem>
+                                    <SelectItem value="Rent"> Rent</SelectItem>
+                                    <SelectItem value="Restaurant"> Restaurant</SelectItem>
+                                    <SelectItem value="Leisure"> Leisure</SelectItem>
+                                    <SelectItem value="Transport"> Transport</SelectItem>
+                                    <SelectItem value="Utilities"> Utilities</SelectItem>
+                                    <SelectItem value="Other"> Other</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-red-500">
@@ -172,7 +172,7 @@ export default function CreateInvoice({
                             </p>
                         </div>
                         <div className="grid gap-1.5">
-                            <Label>Método de Pagamento</Label>
+                            <Label>Payment Method</Label>
                             <Select
                                 defaultValue="CREDIT"
                                 name={fields.paymentMethod.name}
@@ -188,9 +188,9 @@ export default function CreateInvoice({
                                     <SelectValue placeholder="Select method" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="CREDIT">💳 Crédito</SelectItem>
-                                    <SelectItem value="DEBIT">💸 Débito</SelectItem>
-                                    <SelectItem value="CASH">💵 Dinheiro</SelectItem>
+                                    <SelectItem value="CREDIT">💳 Credit</SelectItem>
+                                    <SelectItem value="DEBIT">💸 Debit</SelectItem>
+                                    <SelectItem value="CASH">💵 Cash</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-red-500">
@@ -198,7 +198,7 @@ export default function CreateInvoice({
                             </p>
                         </div>
                         <div className="grid gap-1.5">
-                            <Label>Parcelas (Installments)</Label>
+                            <Label>Installments</Label>
                             <Input
                                 type="number"
                                 min="1"
@@ -211,7 +211,7 @@ export default function CreateInvoice({
                             />
                             {paymentMethod !== "CREDIT" ? (
                                 <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                                    Pago automaticamente.
+                                    Paid automatically.
                                 </p>
                             ) : (
                                 <p className="text-xs text-red-500">

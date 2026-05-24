@@ -26,11 +26,11 @@ async function getData(userId: string) {
             status: true,
             invoiceNumber: true,
             currency: true,
-            createdAt: true,
+            date: true,
             installments: true,
         },
         orderBy: {
-            createdAt: "desc",
+            date: "desc",
         },
     });
     return data;
@@ -83,12 +83,13 @@ export async function InvoiceList() {
                                 <TableCell>
                                     {new Intl.DateTimeFormat("en-US", {
                                         dateStyle: "medium",
-                                    }).format(invoice.createdAt)}
+                                    }).format(new Date(invoice.date))}
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <InvoiceActions
                                         status={invoice.status}
                                         id={invoice.id}
+                                        installments={invoice.installments}
                                     />
                                 </TableCell>
                             </TableRow>

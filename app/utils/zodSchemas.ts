@@ -44,7 +44,7 @@ export const invoiceSchema = z.object({
         return true;
     },
     {
-        message: "Coisas parceladas devem ser obrigatoriamente no crédito",
+        message: "Installment items must be paid with credit",
         path: ["paymentMethod"],
     }
 );

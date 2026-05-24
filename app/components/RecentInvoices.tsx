@@ -15,11 +15,11 @@ async function getData(userId: string) {
             total: true,
             clientName: true,
             clientEmail: true,
-            createdAt: true,
+            date: true,
             currency: true,
         },
         orderBy: {
-            createdAt: "desc",
+            date: "desc",
         },
         take: 8,
     });

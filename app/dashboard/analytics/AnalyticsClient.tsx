@@ -61,8 +61,8 @@ interface PieData {
 
 interface BarData {
     category: string;
-    "Mês Anterior": number;
-    "Mês Atual": number;
+    "Previous Month": number;
+    "Current Month": number;
 }
 
 interface ActiveInstallment {
@@ -123,9 +123,9 @@ export default function AnalyticsClient({
         startTransition(async () => {
             try {
                 await payNextInstallment(id);
-                toast.success(`Parcela de "${name}" paga com sucesso!`);
+                toast.success(`Installment of "${name}" paid successfully!`);
             } catch (error) {
-                toast.error("Ocorreu um erro ao pagar a parcela.");
+                toast.error("An error occurred while paying the installment.");
             }
         });
     };
@@ -138,43 +138,39 @@ export default function AnalyticsClient({
     return (
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-3">
-                <Card className="relative overflow-hidden border bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/10 dark:border-emerald-500/20">
+                <Card className="relative overflow-hidden">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center justify-between">
-                            <span>Gastos Realizados (Pagos)</span>
-                            <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30">
-                                Quitado
-                            </Badge>
+                        <CardTitle className="text-sm font-medium flex items-center justify-between">
+                            <span>Realized Expenses (Paid)</span>
+                            <Badge>Cleared</Badge>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <h2 className="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+                        <h2 className="text-3xl font-bold tracking-tight">
                             {formatCurrency(currentMonthPaid, currency as any)}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-1">
-                            Total de faturas pagas no mês corrente
+                            Total paid invoices in the current month
                         </p>
                     </CardContent>
                 </Card>
 
-                <Card className="relative overflow-hidden border bg-amber-500/5 dark:bg-amber-500/10 border-amber-500/10 dark:border-amber-500/20">
+                <Card className="relative overflow-hidden border">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-amber-600 dark:text-amber-400 flex items-center justify-between">
-                            <span>Gastos Previstos (A Pagar)</span>
-                            <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/30">
-                                Aberto
-                            </Badge>
+                        <CardTitle className="text-sm font-medium flex items-center justify-between">
+                            <span>Expected Expenses (To Pay)</span>
+                            <Badge>Open</Badge>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <h2 className="text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
+                        <h2 className="text-3xl font-bold tracking-tight">
                             {formatCurrency(
                                 currentMonthPending,
                                 currency as any,
                             )}
                         </h2>
                         <p className="text-xs text-muted-foreground mt-1">
-                            Despesas e parcelas pendentes para este mês
+                            Pending invoices and installments for this month
                         </p>
                     </CardContent>
                 </Card>
@@ -187,15 +183,16 @@ export default function AnalyticsClient({
                     }`}
                 >
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                            <span className="text-red-500">
-                                Comparativo Geral (Pagos)
-                            </span>
+                        <CardTitle className="text-sm font-medium flex items-center justify-between">
+                            <span>General Comparison (Paid)</span>
                             <Badge
-                                variant={isSaving ? "secondary" : "destructive"}
-                                className="px-2 py-0.5"
+                                className={`px-2 py-0.5 ${
+                                    isSaving
+                                        ? "border border-indigo-600 bg-transparent text-indigo-600"
+                                        : "border-destructive"
+                                }`}
                             >
-                                {isSaving ? "Economia" : "Aumento"}
+                                {isSaving ? "Savings" : "Increase"}
                             </Badge>
                         </CardTitle>
                     </CardHeader>
@@ -210,20 +207,26 @@ export default function AnalyticsClient({
                             >
                                 {formatCurrency(absDiff, currency as any)}
                             </h2>
-                            <span className="text-sm font-semibold">
-                                {isSaving ? "a menos" : "a mais"}
+                            <span
+                                className={`text-sm font-semibold ${
+                                    isSaving
+                                        ? "text-indigo-600"
+                                        : "text-destructive"
+                                }`}
+                            >
+                                {isSaving ? "less" : "more"}
                             </span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                             {isSaving ? (
                                 <>
                                     <TrendingDown className="size-3.5 text-indigo-600 dark:text-indigo-400" />
-                                    Você economizou em relação ao mês anterior!
+                                    You saved compared to the previous month!
                                 </>
                             ) : (
                                 <>
                                     <TrendingUp className="size-3.5 text-destructive" />
-                                    Gastos pagos superaram os do mês passado.
+                                    Paid expenses exceeded last month's.
                                 </>
                             )}
                         </p>
@@ -234,11 +237,10 @@ export default function AnalyticsClient({
             <Card className="border bg-background/50 backdrop-blur-md">
                 <CardHeader className="pb-3">
                     <CardTitle className="text-base font-bold flex items-center gap-2">
-                        <span>💳 Gastos por Método de Pagamento</span>
+                        <span>Expenses by Payment Method</span>
                     </CardTitle>
                     <CardDescription>
-                        Total de gastos realizados (pagos) divididos por método
-                        no mês corrente
+                        Total spent (paid) split by method in current month
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -250,7 +252,7 @@ export default function AnalyticsClient({
                                 </div>
                                 <div>
                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        Crédito
+                                        Credit
                                     </p>
                                     <h4 className="text-lg font-bold mt-0.5">
                                         {formatCurrency(
@@ -268,7 +270,7 @@ export default function AnalyticsClient({
                                 </div>
                                 <div>
                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        Débito
+                                        Debit
                                     </p>
                                     <h4 className="text-lg font-bold mt-0.5">
                                         {formatCurrency(
@@ -286,7 +288,7 @@ export default function AnalyticsClient({
                                 </div>
                                 <div>
                                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        Dinheiro
+                                        Cash
                                     </p>
                                     <h4 className="text-lg font-bold mt-0.5">
                                         {formatCurrency(
@@ -301,17 +303,17 @@ export default function AnalyticsClient({
                 </CardContent>
             </Card>
 
-            <Card className="border bg-gradient-to-r from-blue-50/50 via-indigo-50/20 to-transparent dark:from-blue-950/20 dark:via-indigo-950/10 dark:to-transparent">
+            <Card className="border bg-background/50 backdrop-blur-md">
                 <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
-                        <Sparkles className="size-5 text-indigo-500 animate-pulse" />
+                        <Sparkles className="size-5 text-muted-foreground" />
                         <CardTitle className="text-lg font-bold">
-                            Smart Insights de Gastos
+                            Smart Expense Insights
                         </CardTitle>
                     </div>
                     <CardDescription>
-                        Análise inteligente baseada nos seus gastos **já
-                        quitados**
+                        Smart analysis based on your{" "}
+                        <span className="font-bold">already paid</span> expenses
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -328,33 +330,33 @@ export default function AnalyticsClient({
                             )}
                             <div>
                                 <h4 className="text-sm font-semibold">
-                                    Resumo Geral de Gastos Quitados
+                                    General Summary of Paid Expenses
                                 </h4>
                                 <p className="text-sm text-muted-foreground mt-0.5">
                                     {isSaving ? (
                                         <>
-                                            Excelente gestão! Você desembolsou{" "}
+                                            Excellent management! You spent{" "}
                                             <strong className="text-emerald-600 dark:text-emerald-400">
                                                 {formatCurrency(
                                                     absDiff,
                                                     currency as any,
                                                 )}{" "}
-                                                a menos
+                                                less
                                             </strong>{" "}
-                                            em pagamentos do que no mês passado.
+                                            in payments than last month.
                                         </>
                                     ) : (
                                         <>
-                                            Suas saídas de caixa pagas foram{" "}
+                                            Your paid cash outflows were{" "}
                                             <strong className="text-destructive">
                                                 {formatCurrency(
                                                     absDiff,
                                                     currency as any,
                                                 )}{" "}
-                                                maiores
+                                                higher
                                             </strong>{" "}
-                                            do que no mês passado. Fique de olho
-                                            para equilibrar suas finanças!
+                                            than last month. Keep an eye out to
+                                            balance your finances!
                                         </>
                                     )}
                                 </p>
@@ -391,9 +393,11 @@ export default function AnalyticsClient({
                                                 <p className="text-sm font-medium">
                                                     {item.category}
                                                 </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Pago este Mês:{" "}
-                                                    {currentFormatted}
+                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                    Paid:{" "}
+                                                    <span className="font-medium text-foreground">
+                                                        {currentFormatted}
+                                                    </span>
                                                 </p>
                                             </div>
                                         </div>
@@ -409,7 +413,7 @@ export default function AnalyticsClient({
                                                         -{diffFormatted}
                                                     </Badge>
                                                     <span className="text-[10px] text-muted-foreground mt-0.5">
-                                                        economizou
+                                                        saved
                                                     </span>
                                                 </div>
                                             ) : item.diff > 0 ? (
@@ -422,7 +426,7 @@ export default function AnalyticsClient({
                                                         +{diffFormatted}
                                                     </Badge>
                                                     <span className="text-[10px] text-muted-foreground mt-0.5">
-                                                        gastou a mais
+                                                        spent more
                                                     </span>
                                                 </div>
                                             ) : (
@@ -432,10 +436,10 @@ export default function AnalyticsClient({
                                                         className="text-muted-foreground px-2 py-0.5 flex items-center gap-0.5"
                                                     >
                                                         <Minus className="size-3" />
-                                                        Estável
+                                                        Stable
                                                     </Badge>
                                                     <span className="text-[10px] text-muted-foreground mt-0.5">
-                                                        sem alteração
+                                                        no change
                                                     </span>
                                                 </div>
                                             )}
@@ -452,20 +456,19 @@ export default function AnalyticsClient({
                 <Card className="border bg-background/50 backdrop-blur-md">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base font-bold flex items-center gap-2">
-                            <span>📦 Parcelamentos Ativos Este Mês</span>
+                            <span>Active Installments This Month</span>
                             <Badge
                                 variant="outline"
                                 className="ml-auto font-normal"
                             >
                                 {activeInstallmentsThisMonth.length}{" "}
                                 {activeInstallmentsThisMonth.length === 1
-                                    ? "parcela ativa"
-                                    : "parcelas ativas"}
+                                    ? "active installment"
+                                    : "active installments"}
                             </Badge>
                         </CardTitle>
                         <CardDescription>
-                            Visualização das despesas parceladas divididas por
-                            status
+                            View of installment expenses split by status
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -496,7 +499,7 @@ export default function AnalyticsClient({
 
                                             {isPaid ? (
                                                 <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 px-2 py-0.5 border border-emerald-500/20 shrink-0">
-                                                    Pago
+                                                    Paid
                                                 </Badge>
                                             ) : (
                                                 <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -504,7 +507,7 @@ export default function AnalyticsClient({
                                                         variant="outline"
                                                         className="text-amber-600 dark:text-amber-400 bg-amber-500/5 dark:bg-amber-500/10 border-amber-500/20"
                                                     >
-                                                        A Pagar
+                                                        Pending
                                                     </Badge>
                                                     <Button
                                                         size="sm"
@@ -523,7 +526,7 @@ export default function AnalyticsClient({
                                                         ) : (
                                                             <CreditCard className="size-3 mr-1" />
                                                         )}
-                                                        Pagar Parcela
+                                                        Pay Installment
                                                     </Button>
                                                 </div>
                                             )}
@@ -532,7 +535,7 @@ export default function AnalyticsClient({
                                         <div className="flex items-end justify-between pt-2 border-t border-dashed">
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                                                    Esta Parcela
+                                                    This Installment
                                                 </span>
                                                 <span
                                                     className={`text-base font-bold ${isPaid ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}
@@ -548,8 +551,8 @@ export default function AnalyticsClient({
                                                     variant="secondary"
                                                     className="text-xs font-semibold px-2 py-0.5"
                                                 >
-                                                    Parcela{" "}
-                                                    {inst.installmentIndex} de{" "}
+                                                    Installment{" "}
+                                                    {inst.installmentIndex} of{" "}
                                                     {inst.totalInstallments}
                                                 </Badge>
                                                 <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -573,21 +576,21 @@ export default function AnalyticsClient({
                 <Card className="md:col-span-2 border bg-background/50 backdrop-blur-md">
                     <CardHeader>
                         <CardTitle className="text-base font-semibold">
-                            Comparativo Mensal por Categoria (Gastos Pagos)
+                            Monthly Category Comparison (Paid)
                         </CardTitle>
                         <CardDescription>
-                            Gastos pagos comparativos lado a lado entre o mês
-                            passado e o mês atual
+                            Side-by-side comparison of paid expenses between
+                            last month and current month
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="h-80 pr-4">
+                    <CardContent className="h-80 pr-4 mt-3">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                                 data={barChartData}
                                 margin={{
                                     top: 10,
                                     right: 10,
-                                    left: -10,
+                                    left: 15,
                                     bottom: 5,
                                 }}
                             >
@@ -608,6 +611,9 @@ export default function AnalyticsClient({
                                     tickFormatter={(v) => `R$ ${v}`}
                                 />
                                 <RechartsTooltip
+                                    cursor={{
+                                        fill: "rgba(148, 163, 184, 0.08)",
+                                    }}
                                     formatter={(value: any) => [
                                         formatCurrency(value, currency as any),
                                         "",
@@ -625,12 +631,12 @@ export default function AnalyticsClient({
                                     }}
                                 />
                                 <Bar
-                                    dataKey="Mês Anterior"
+                                    dataKey="Previous Month"
                                     fill="#94a3b8"
                                     radius={[4, 4, 0, 0]}
                                 />
                                 <Bar
-                                    dataKey="Mês Atual"
+                                    dataKey="Current Month"
                                     fill="#10b981"
                                     radius={[4, 4, 0, 0]}
                                 />
@@ -642,11 +648,11 @@ export default function AnalyticsClient({
                 <Card className="border bg-background/50 backdrop-blur-md">
                     <CardHeader>
                         <CardTitle className="text-base font-semibold">
-                            Distribuição de Gastos (Gastos Pagos)
+                            Expense Distribution (Paid)
                         </CardTitle>
                         <CardDescription>
-                            Divisão percentual dos gastos pagos por categoria no
-                            mês atual
+                            Percentage division of paid expenses by category in
+                            the current month
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="h-80 flex flex-col justify-between">
@@ -728,7 +734,8 @@ export default function AnalyticsClient({
                             <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
                                 <Sparkles className="size-8 mb-2 opacity-20" />
                                 <p className="text-sm">
-                                    Nenhum gasto pago registrado no mês atual.
+                                    No paid expenses recorded in the current
+                                    month.
                                 </p>
                             </div>
                         )}
