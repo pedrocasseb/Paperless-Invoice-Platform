@@ -42,7 +42,7 @@ async function getGraphData(userId: string) {
 
     const aggregatedMap = new Map<string, { dateStr: string; income: number; expense: number; dateObj: Date }>();
 
-    invoices.forEach((curr) => {
+    invoices.forEach((curr: { date: Date | string; total: number }) => {
         const d = new Date(curr.date);
         const dateStr = d.toLocaleDateString("en-US", {
             month: "short",
@@ -64,7 +64,7 @@ async function getGraphData(userId: string) {
         }
     });
 
-    incomes.forEach((curr) => {
+    incomes.forEach((curr: { date: Date | string; amount: number }) => {
         const d = new Date(curr.date);
         const dateStr = d.toLocaleDateString("en-US", {
             month: "short",

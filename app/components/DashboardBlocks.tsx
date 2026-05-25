@@ -39,22 +39,22 @@ export async function DashboardBlocks() {
     );
 
     const receivedIncome = incomes
-        .filter((i) => i.status === "RECEIVED")
-        .reduce((acc, curr) => acc + curr.amount, 0);
+        .filter((i: { status: string; amount: number }) => i.status === "RECEIVED")
+        .reduce((acc: number, curr: { amount: number }) => acc + curr.amount, 0);
 
     const paidExpenses = invoices
-        .filter((i) => i.status === "PAID")
-        .reduce((acc, curr) => acc + curr.total, 0);
+        .filter((i: { status: string; total: number }) => i.status === "PAID")
+        .reduce((acc: number, curr: { total: number }) => acc + curr.total, 0);
 
     const netBalance = receivedIncome - paidExpenses;
 
     const pendingIncome = incomes
-        .filter((i) => i.status === "PENDING")
-        .reduce((acc, curr) => acc + curr.amount, 0);
+        .filter((i: { status: string; amount: number }) => i.status === "PENDING")
+        .reduce((acc: number, curr: { amount: number }) => acc + curr.amount, 0);
 
     const pendingExpenses = invoices
-        .filter((i) => i.status === "PENDING")
-        .reduce((acc, curr) => acc + curr.total, 0);
+        .filter((i: { status: string; total: number }) => i.status === "PENDING")
+        .reduce((acc: number, curr: { total: number }) => acc + curr.total, 0);
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-8">
