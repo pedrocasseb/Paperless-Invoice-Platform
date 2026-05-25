@@ -26,11 +26,11 @@ import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { incomeSchema } from "../utils/zodSchemas";
 import { Currency, formatCurrency } from "../utils/format";
-import { Prisma } from "@prisma/client";
+import { Income } from "@prisma/client";
 import { updateIncome } from "../actions/updateIncome";
 
 interface iAppProps {
-    data: Prisma.IncomeGetPayload<{}>;
+    data: Income;
 }
 
 export function EditIncome({ data }: iAppProps) {

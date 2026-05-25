@@ -26,11 +26,11 @@ import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { invoiceSchema } from "../utils/zodSchemas";
 import { Currency, formatCurrency } from "../utils/format";
-import { Prisma } from "@prisma/client";
+import { Invoice } from "@prisma/client";
 import { updateInvoice } from "../actions/updateInvoice";
 
 interface iAppProps {
-    data: Prisma.InvoiceGetPayload<{}>;
+    data: Invoice;
 }
 
 export function EditInvoice({ data }: iAppProps) {
